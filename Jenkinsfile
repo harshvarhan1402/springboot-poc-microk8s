@@ -41,23 +41,26 @@ pipeline {
         stage('building docker image') {
             steps {
                 script {
-                    sh "cd DOCKER; sudo docker build -t harshvardhan1402/microk8s-kubernetes-poc:v_${BUILD_NUMBER} ."
+                    sh "cd DOCKER; sudo docker build -t java-poc:v_${BUILD_NUMBER} ."
                 }
             }
         }
-        stage('dcoker push') {
-            steps {
-                script {
-                    sh "sudo docker push harshvardhan1402/microk8s-kubernetes-poc:v_${BUILD_NUMBER}"
-                }
-            }
-        }
+        // stage('dcoker push') {
+        //     steps {
+        //         script {
+        //             sh "sudo docker push harshvardhan1402/microk8s-kubernetes-poc:v_${BUILD_NUMBER}"
+        //         }
+        //     }
+        // }
         stage('deploying on microk8s') {
             steps {
                 script {
-                    sh "sudo microk8s.helm3 upgrade --install microk8s --set image.tag=v_${BUILD_NUMBER} /home/ubuntu/kubernetes-poc/"
-                    sh "sudo microk8s.kubectl rollout status deployment.apps/microk8s-kubernetes-poc"
-                    sh "sudo docker images > unused_images_cid"
+                    sh '''
+                        #docker rmi -f java-poc
+                        docker run -it -d -p 8282:8080 java-poc:v_${BUILD_NUMBER}
+                        docker ps
+
+                    '''
                 }
             }
         }
